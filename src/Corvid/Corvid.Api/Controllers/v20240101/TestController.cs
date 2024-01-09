@@ -1,9 +1,9 @@
-﻿using Asp.Versioning;
+﻿using Corvid.Api.Attributes;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Corvid.Api.Controllers.v1_1;
+namespace Corvid.Api.Controllers.v20240101;
 
-[ApiVersion("2024-01-01")]
+[IntroducedInVersion(2024, 1)]
 public class TestController : CorvidControllerBase
 {
     [HttpGet]

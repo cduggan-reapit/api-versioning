@@ -1,8 +1,6 @@
-using System.Reflection;
-using Asp.Versioning;
+using Corvid.Api.Infrastructure;
 using Corvid.Api.Infrastructure.Swagger;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Corvid.Api.Infrastructure.Versioning;
 
 namespace Corvid.Api;
 
@@ -13,24 +11,9 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-
-        builder.Services
-            .AddApiVersioning(c =>
-            {
-                c.ReportApiVersions = true;
-                c.ApiVersionReader = new HeaderApiVersionReader("api-version");
-            })
-            .AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "G";
-            });
+        builder.Services.ConfigureVersioningServices()
+            .ConfigureSwaggerServices();
         
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(options => 
-            options.OperationFilter<ApiVersionOperationFilter>());
-        
-        builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>();
-
         builder.Services.AddControllers();
         
         var app = builder.Build();
@@ -38,21 +21,14 @@ public static class Program
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                foreach (var description in app.DescribeApiVersions())
-                {
-                    var url = $"/swagger/{description.GroupName}/swagger.json";
-                    options.SwaggerEndpoint(url, description.GroupName);
-                }
-            });
+            app.UseConfiguredSwagger();
         }
 
         app.UseHttpsRedirection();
-        
-        app.MapControllers();
 
+        app.UseRouting();
+        app.UseEndpoints(endpoints => endpoints.MapControllers());
+        
         app.Run();
     }
 }
