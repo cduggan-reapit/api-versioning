@@ -1,4 +1,4 @@
-using Corvid.Api.Infrastructure;
+using Corvid.Api.Infrastructure.Middleware;
 using Corvid.Api.Infrastructure.Swagger;
 using Corvid.Api.Infrastructure.Versioning;
 
@@ -23,11 +23,14 @@ public static class Program
         {
             app.UseConfiguredSwagger();
         }
-
+        
         app.UseHttpsRedirection();
 
         app.UseRouting();
+        app.UseMiddleware<ApiVersionMiddleware>();
         app.UseEndpoints(endpoints => endpoints.MapControllers());
+        
+        
         
         app.Run();
     }

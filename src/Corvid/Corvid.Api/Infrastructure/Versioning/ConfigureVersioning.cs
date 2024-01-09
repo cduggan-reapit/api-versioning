@@ -2,7 +2,7 @@
 
 namespace Corvid.Api.Infrastructure.Versioning;
 
-public static class ConfigureVersioning
+internal static class ConfigureVersioning
 {
     public const string ApiVersionHeaderKey = "api-version";
 
@@ -13,12 +13,9 @@ public static class ConfigureVersioning
                 options.ApiVersionReader = new HeaderApiVersionReader(ApiVersionHeaderKey);
                 options.ReportApiVersions = false;
             })
-            .AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "G";
-            })
-            .AddMvc(options => options.Conventions.Add(new CustomApiVersionConvention()));
-        
+            .AddApiExplorer(options => options.GroupNameFormat = "G")
+            .AddMvc(options => options.Conventions.Add(new IncrementalApiVersionConvention()));
+
         return services;
     } 
 }

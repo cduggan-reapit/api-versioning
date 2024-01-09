@@ -4,7 +4,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Corvid.Api.Infrastructure.Swagger;
 
-public class ApiVersionFilter : IOperationFilter
+/// <summary>
+/// Custom operation filter to exclude "api-version" property from swagger definition
+/// </summary>
+internal class ApiVersionFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {

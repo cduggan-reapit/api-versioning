@@ -1,19 +1,31 @@
-﻿using Corvid.Api.Infrastructure.Versioning;
+﻿using Corvid.Api.Helpers;
 
 namespace Corvid.Api.Infrastructure.Swagger;
 
-public static class ConfigureSwagger
+internal static class ConfigureSwagger
 {
+    private static Dictionary<string, int> HttpMethodDisplayOrder =>
+        new Dictionary<string, int>()
+        {
+            { "HttpConnect", 0 },
+            { "HttpTrace", 1 },
+            { "HttpGet", 2 },
+            { "HttpHead", 3 },
+            { "HttpOptions", 4 },
+            { "HttpPost", 5 },
+            { "HttpPatch", 6 },
+            { "HttpPut", 7 },
+            { "HttpDelete", 8 },
+            { "HttpMethod", 9 }
+        };
+    
     public static IServiceCollection ConfigureSwaggerServices(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        
         services.AddSwaggerGen(c =>
         {
-            // Hide the api-version parameter from swagger doc
             c.OperationFilter<ApiVersionFilter>();
         });
-        
         services.ConfigureOptions<SwaggerGenOptionsConfiguration>();
         
         return services;
@@ -24,14 +36,14 @@ public static class ConfigureSwagger
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
-            var displayVersions = ApiVersionHelper.GetSwaggerDisplayVersions();
+            // Limit swagger to latest daily, past three monthlies, and all yearlies
+            var displayVersions = new[] { ApiVersionHelper.GetLatestDailyVersion() }
+                        .Concat(ApiVersionHelper.GetMonthlyVersions(3))
+                        .Concat(ApiVersionHelper.GetYearlyVersions());
+            
             var swaggerVersions = app.DescribeApiVersions()
-                .Join(displayVersions, 
-                    version => version.ApiVersion.GroupVersion, 
-                    display => display,
-                    (version, _) => version)
-                .OrderByDescending(v => v.ApiVersion.GroupVersion)
-                .ToList();
+                .Join(displayVersions, description => description.ApiVersion.GroupVersion, versionDate => versionDate, (version, _) => version)
+                .OrderByDescending(v => v.ApiVersion.GroupVersion);
 
             foreach (var description in swaggerVersions)
             {

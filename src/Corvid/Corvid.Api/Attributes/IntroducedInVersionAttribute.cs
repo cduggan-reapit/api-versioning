@@ -2,9 +2,9 @@
 
 public class IntroducedInVersionAttribute: Attribute
 {
-    public IntroducedInVersionAttribute(int year, int month)
+    public IntroducedInVersionAttribute(int year, int month, int day)
     {
-        Version = new(year, month, 1);
+        Version = new DateOnly(year, month, day);
     }
 
     public IntroducedInVersionAttribute(string date)
