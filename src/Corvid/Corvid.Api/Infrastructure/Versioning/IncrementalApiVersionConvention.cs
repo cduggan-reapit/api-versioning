@@ -23,17 +23,23 @@ internal class IncrementalApiVersionConvention : IControllerConvention
             // Cascade - action configuration, controller configuration, a far-off date in the future
             // Since this isn't used as a logic gate, if it's not defined we assume it is perennially live
             var actionRemoved = action.Attributes.OfType<Attribute>().GetRemovalDate() 
-                                ?? controllerRemoved 
-                                ?? new RemovedInVersionAttribute(DateOnly.MaxValue.ToString());
+                                ?? controllerRemoved;
 
             if (actionIntroduced == null)
                 continue;
             
             var actionVersions = ApiVersionHelper.ApiVersions
-                .Where(date => date >= actionIntroduced.Version && date < actionRemoved.Version)
+                .Where(date => date >= actionIntroduced.Version && date < (actionRemoved?.Version ?? DateOnly.MaxValue))
                 .Select(date => new ApiVersion(date));
 
-            builder.Action(action.ActionMethod).HasApiVersions(actionVersions);
+            if (actionRemoved == null)
+            {
+                builder.Action(action.ActionMethod).HasApiVersions(actionVersions);
+            }
+            else
+            {
+                builder.Action(action.ActionMethod).HasDeprecatedApiVersions(actionVersions);
+            }
         }
 
         return true;

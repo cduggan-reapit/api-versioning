@@ -1,30 +1,20 @@
-﻿using Corvid.Api.Helpers;
+﻿using System.Reflection;
+using Corvid.Api.Helpers;
 
 namespace Corvid.Api.Infrastructure.Swagger;
 
 internal static class ConfigureSwagger
 {
-    private static Dictionary<string, int> HttpMethodDisplayOrder =>
-        new Dictionary<string, int>()
-        {
-            { "HttpConnect", 0 },
-            { "HttpTrace", 1 },
-            { "HttpGet", 2 },
-            { "HttpHead", 3 },
-            { "HttpOptions", 4 },
-            { "HttpPost", 5 },
-            { "HttpPatch", 6 },
-            { "HttpPut", 7 },
-            { "HttpDelete", 8 },
-            { "HttpMethod", 9 }
-        };
-    
     public static IServiceCollection ConfigureSwaggerServices(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
             c.OperationFilter<ApiVersionFilter>();
+            c.OperationFilter<DeprecatedEndpointFilter>();
+            
+            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+            c.IncludeXmlComments(filePath);
         });
         services.ConfigureOptions<SwaggerGenOptionsConfiguration>();
         
